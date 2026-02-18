@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 class Pet(models.Model):
@@ -92,6 +93,11 @@ class Ad(models.Model):
         related_name="ads"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ads",
+    )
 
     class Meta:
         ordering = ["-created_at"]
@@ -102,10 +108,3 @@ class Ad(models.Model):
             pet_type = self.pet.pet_type_details
 
         return f"Ad for {self.pet.name} {pet_type.capitalize()}"
-
-    def delete(self, *args, **kwargs):
-        pet = self.pet
-        super().delete(*args, **kwargs)
-
-        if pet:
-            pet.delete()
