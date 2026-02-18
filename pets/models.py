@@ -32,7 +32,7 @@ class Pet(models.Model):
 
     name = models.CharField(max_length=64)
     description = models.TextField()
-    main_image = models.ImageField(upload_to="media/")
+    main_image = models.ImageField(upload_to="media")
     location = models.CharField(max_length=256)
 
     age = models.CharField(
@@ -83,3 +83,29 @@ class Pet(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class Ad(models.Model):
+    pet = models.OneToOneField(
+        Pet,
+        on_delete=models.CASCADE,
+        related_name="ads"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        pet_type = self.pet.pet_type
+        if pet_type == "other":
+            pet_type = self.pet.pet_type_details
+
+        return f"Ad for {self.pet.name} {pet_type.capitalize()}"
+
+    def delete(self, *args, **kwargs):
+        pet = self.pet
+        super().delete(*args, **kwargs)
+
+        if pet:
+            pet.delete()
