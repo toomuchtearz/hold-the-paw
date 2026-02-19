@@ -1,9 +1,11 @@
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from pets.models import Ad
-from pets.serializers import PetSerializer, AdSerializer
+from pets.models import PetListing
+from pets.serializers import PetListingSerializer
 
 
 class AdViewSet(viewsets.ModelViewSet):
-    queryset = Ad.objects.all()
-    serializer_class = AdSerializer
+    queryset = PetListing.objects.all()
+    serializer_class = PetListingSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
