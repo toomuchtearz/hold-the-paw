@@ -5,7 +5,7 @@ from pets.models import PetListing
 from pets.serializers import PetListingSerializer
 
 
-class AdViewSet(viewsets.ModelViewSet):
+class PetListingViewSet(viewsets.ModelViewSet):
     queryset = PetListing.objects.all()
     serializer_class = PetListingSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
