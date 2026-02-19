@@ -1,6 +1,9 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from users.models import ShelterProfile, PersonalProfile
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -33,5 +36,82 @@ class UserSerializer(serializers.ModelSerializer):
         if password:
             updated_user.set_password(password)
             updated_user.save()
+
+        return updated_user
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = get_user_model()
+        fields = (
+            "id",
+            "email",
+            "phone_number",
+            "password",
+            "role",
+        )
+
+        extra_kwargs = {
+            "password": {
+                "write_only": True,
+                "min_length": 8,
+                "style": {"input_type": "password"},
+            }
+        }
+    def create(self, validated_data):
+
+        new_user = get_user_model().objects.create_user(**validated_data)
+        new_user_role = new_user.role
+
+        if new_user_role == get_user_model().RoleChoice.SHELTER:
+            ShelterProfile.objects.create(
+                user=new_user
+            )
+        elif new_user_role == get_user_model().RoleChoice.PERSONAL:
+            PersonalProfile.objects.create(user=new_user)
+
+        return new_user
+
+
+class UserManageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = get_user_model()
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "phone_number",
+        )
+
+class ShelterManageSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField(source="shelter_profile.company_name")
+    address = serializers.CharField(source="shelter_profile.address")
+    description = serializers.CharField(source="shelter_profile.description")
+
+    class Meta:
+        model = get_user_model()
+        fields = (
+            "id",
+            "email",
+            "company_name",
+            "address",
+            "description",
+            "phone_number",
+        )
+
+    def update(self, instance, validated_data):
+        shelter_profile_info = validated_data.pop("shelter_profile")
+        shelter_profile = instance.shelter_profile
+        updated_user = super().update(instance, validated_data)
+
+        if shelter_profile_info:
+
+            for key, value in shelter_profile_info.items():
+                setattr(shelter_profile, key, value)
+
+            shelter_profile.save()
 
         return updated_user
