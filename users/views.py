@@ -45,6 +45,7 @@ class CreateUserView(generics.CreateAPIView):
     serializer_class = UserCreateSerializer
     permission_classes = (AllowAny,)
 
+
 class RequestPasswordReset(generics.GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = ResetPasswordRequestSerializer

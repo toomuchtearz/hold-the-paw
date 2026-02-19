@@ -120,6 +120,7 @@ class ShelterManageSerializer(serializers.ModelSerializer):
 class ResetPasswordRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
 
+
 class ResetPasswordSerializer(serializers.Serializer):
     new_password = serializers.RegexField(
         regex=r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
