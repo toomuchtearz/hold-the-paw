@@ -7,7 +7,7 @@ app_name = "pets"
 
 router = DefaultRouter()
 
-router.register("ads", AdViewSet, basename="ads")
+router.register("listings", AdViewSet, basename="listings")
 
 urlpatterns = [
     path("", include(router.urls))
