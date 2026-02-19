@@ -1,7 +1,20 @@
+import os
+import uuid
+
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
 
-class Pet(models.Model):
+
+def create_custom_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    return os.path.join(
+        "uploads/images/",
+        f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
+    )
+
+
+class PetListing(models.Model):
     class AgeChoices(models.TextChoices):
         PUPPY = "puppy", "Puppy (0–6/12 months)"
         JUNIOR = "junior", "Junior (6 months – 2 years)"
@@ -31,9 +44,15 @@ class Pet(models.Model):
         FEMALE = "female", "Female"
         UNKNOWN = "unknown", "Unknown"
 
+    class StatusChoices(models.TextChoices):
+        ACTIVE = "active", "Looking for a home"
+        PENDING = "pending", "Adoption pending"
+        ADOPTED = "adopted", "Found a home"
+
+    # --- Pet Details ---
     name = models.CharField(max_length=64)
     description = models.TextField()
-    main_image = models.ImageField(upload_to="media")
+    main_image = models.ImageField(upload_to=create_custom_path)
     location = models.CharField(max_length=256)
 
     age = models.CharField(
@@ -82,29 +101,21 @@ class Pet(models.Model):
     is_sterilized = models.BooleanField(default=False)
     is_vaccinated = models.BooleanField(default=False)
 
-    def __str__(self) -> str:
-        return self.name
-
-
-class Ad(models.Model):
-    pet = models.OneToOneField(
-        Pet,
-        on_delete=models.CASCADE,
-        related_name="ads"
-    )
+    # --- Listing Details ---
     created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="ads",
+        related_name="listings",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=StatusChoices.choices,
+        default=StatusChoices.ACTIVE
     )
 
     class Meta:
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        pet_type = self.pet.pet_type
-        if pet_type == "other":
-            pet_type = self.pet.pet_type_details
-
-        return f"Ad for {self.pet.name} {pet_type.capitalize()}"
+        return f"Listing for {self.name}"
