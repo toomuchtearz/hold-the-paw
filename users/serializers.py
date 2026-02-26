@@ -1,46 +1,11 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 from users.models import ShelterProfile, PersonalProfile
 
-
-class UserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = get_user_model()
-        fields = (
-            "id",
-            "username",
-            "password",
-            "is_staff",
-        )
-        read_only_fields = (
-            "id",
-            "is_staff",
-        )
-        extra_kwargs = {
-            "password": {
-                "write_only": True,
-                "min_length": 8,
-                "style": {"input_type": "password"},
-            }
-        }
-
-    def create(self, validated_data):
-        return get_user_model().objects.create_user(**validated_data)
-
-    def update(self, instance, validated_data):
-        password = validated_data.pop("password")
-        updated_user = super().update(instance, validated_data)
-
-        if password:
-            updated_user.set_password(password)
-            updated_user.save()
-
-        return updated_user
-
-
-class UserCreateSerializer(serializers.ModelSerializer):
+class PersonalRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
@@ -49,32 +14,67 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
             "password",
-            "role",
+            "first_name",
+            "last_name",
         )
-
         extra_kwargs = {
             "password": {
                 "write_only": True,
-                "min_length": 8,
                 "style": {"input_type": "password"},
-            }
+                "validators": [validate_password],
+            },
+            "first_name": {"required": True, "allow_blank": False},
+            "last_name": {"required": True, "allow_blank": False},
         }
+
+    @transaction.atomic
     def create(self, validated_data):
-
+        validated_data["role"] = get_user_model().RoleChoice.PERSONAL
         new_user = get_user_model().objects.create_user(**validated_data)
-        new_user_role = new_user.role
 
-        if new_user_role == get_user_model().RoleChoice.SHELTER:
-            ShelterProfile.objects.create(
-                user=new_user
-            )
-        elif new_user_role == get_user_model().RoleChoice.PERSONAL:
-            PersonalProfile.objects.create(user=new_user)
-
+        PersonalProfile.objects.create(
+            user=new_user
+        )
         return new_user
 
 
-class UserManageSerializer(serializers.ModelSerializer):
+class ShelterRegistrationSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField(write_only=True)
+    tax_id = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = get_user_model()
+        fields = (
+            "id",
+            "email",
+            "phone_number",
+            "password",
+            "tax_id",
+            "company_name",
+        )
+        extra_kwargs = {
+            "password": {
+                "write_only": True,
+                "style": {"input_type": "password"},
+                "validators": [validate_password],
+            }
+        }
+    @transaction.atomic
+    def create(self, validated_data):
+        company_name = validated_data.pop("company_name")
+        tax_id = validated_data.pop("tax_id")
+        validated_data["role"] = get_user_model().RoleChoice.SHELTER
+
+        new_user = get_user_model().objects.create_user(**validated_data)
+        ShelterProfile.objects.create(
+            user=new_user,
+            company_name=company_name,
+            tax_id=tax_id
+        )
+        return new_user
+
+
+class PersonalManageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
@@ -122,9 +122,32 @@ class ResetPasswordRequestSerializer(serializers.Serializer):
 
 
 class ResetPasswordSerializer(serializers.Serializer):
-    new_password = serializers.RegexField(
-        regex=r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
-        write_only=True,
-        error_messages={'invalid': 'Password must be at least 8 characters long with at least one capital letter and symbol'}
+    new_password = serializers.CharField(
+        max_length=128, write_only=True,
+        style={"input_type": "password"},
+        validators=[validate_password]
+
     )
-    confirm_password = serializers.CharField(write_only=True, required=True)
+    confirm_password = serializers.CharField(
+        write_only=True,
+        style={"input_type": "password"},
+    )
+
+    def validate(self, attrs):
+        if attrs["new_password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError({
+                "confirm_password": "Passwords do not match."
+            })
+        return attrs
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(
+        max_length=128, write_only=True,
+        style={"input_type": "password"}
+    )
+    new_password = serializers.CharField(
+        max_length=128, write_only=True,
+        style={"input_type": "password"},
+        validators=[validate_password]
+    )
