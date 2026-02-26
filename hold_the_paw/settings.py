@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     "users",
     "pets",
+    "conversations",
     "rest_framework",
     "rest_framework_simplejwt",
 ]
