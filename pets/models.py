@@ -16,27 +16,31 @@ def create_custom_path(instance, filename):
 
 class PetListing(models.Model):
     class AgeChoices(models.TextChoices):
-        PUPPY = "puppy", "Puppy (0–6/12 months)"
-        JUNIOR = "junior", "Junior (6 months – 2 years)"
-        ADULT = "adult", "Adult/Mature (1–7 years)"
-        SENIOR = "senior", "Senior (6–10+ years)"
+        PUPPY = "puppy", "Puppy (0–12 months)"
+        JUNIOR = "junior", "Junior (1 - 2 years)"
+        ADULT = "adult", "Adult (3–5 years)"
+        SENIOR = "senior", "Senior (5+ years)"
 
     class TypeChoices(models.TextChoices):
         DOG = "dog", "Dog"
         CAT = 'cat', "Cat"
         HAMSTER = 'hamster', "Hamster"
-        RABBIT = 'rabbit', 'Rabbit'
+        BIRD = "bird", "Bird"
+        FISH = "fish", "Fish"
         OTHER = 'other', 'Other'
 
     class ColorChoices(models.TextChoices):
-        BLACK = "black", "Black"
         WHITE = 'white', "White"
+        BEIGE = "beige", "Beige"
         GRAY = 'gray', "Gray"
+        BLACK = "black", "Black"
         GINGER = 'ginger', 'Ginger'
         BROWN = 'brown', 'Brown'
-        BEIGE = "beige", "Beige"
-        TRICOLOR = "tricolor", "Tricolor"
+        BRINDLE = "brindle", "Brindle"
         SPOTTED = "spotted", "Spotted"
+        TWO_COLOR = "two_color", "Two colored"
+        TRICOLOR = "tricolor", "Tricolor"
+        MULTICOLORED = "multicolor", "Multicolored"
         OTHER = "other", "Other"
 
     class GenderChoices(models.TextChoices):
@@ -45,61 +49,59 @@ class PetListing(models.Model):
         UNKNOWN = "unknown", "Unknown"
 
     class StatusChoices(models.TextChoices):
-        ACTIVE = "active", "Looking for a home"
-        PENDING = "pending", "Adoption pending"
-        ADOPTED = "adopted", "Found a home"
+        HOME = "looking_for_a_home", "Looking for a home"
+        HELP = "help_needed", "Help needed"
+
+    class BreedChoices(models.TextChoices):
+        NO_BREED = "no_breed", "No breed"
+        MONGREL = "mongrel", "Mongrel"
+        PUREBRED = "purebred", "Purebred"
+
+    class SizeChoices(models.TextChoices):
+        SMALL = "s", "Small"
+        MEDIUM = "m", "Medium"
+        LARGE = "l", "Large"
 
     # --- Pet Details ---
-    name = models.CharField(max_length=64)
-    description = models.TextField()
-    main_image = models.ImageField(upload_to=create_custom_path)
-    location = models.CharField(max_length=256)
-
-    age = models.CharField(
-        max_length=64,
-        choices=AgeChoices.choices,
-    )
-
-    pet_type = models.CharField(
-        max_length=64,
-        default=TypeChoices.DOG,
-        choices=TypeChoices.choices
-    )
-    pet_type_details = models.CharField(
-        max_length=64,
-        blank=True,
-        null=True,
-        help_text="Please specify pet type if the main type field is 'Other'."
-    )
-
-    color = models.CharField(
-        max_length=64,
-        choices=ColorChoices.choices
-    )
-    color_details = models.CharField(
-        max_length=64,
-        blank=True,
-        null=True,
-        help_text="Please specify color if the main color field is 'Other'"
-    )
+    name = models.CharField(max_length=32)
+    location = models.CharField(max_length=64)
 
     gender = models.CharField(
-        max_length=10,
+        max_length=32,
         choices=GenderChoices.choices,
         default=GenderChoices.UNKNOWN
     )
 
-    breed = models.CharField(max_length=64, null=True, blank=True)
-    weight = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Weight in kg"
+    age = models.CharField(
+        max_length=32,
+        choices=AgeChoices.choices,
     )
-    is_purebred = models.BooleanField(default=False)
+
+    breed = models.CharField(
+        max_length=32,
+        choices=BreedChoices.choices
+    )
+
+    pet_type = models.CharField(
+        max_length=32,
+        default=TypeChoices.DOG,
+        choices=TypeChoices.choices
+    )
+
+    main_image = models.ImageField(upload_to=create_custom_path)
+
+    color = models.CharField(
+        max_length=32,
+        choices=ColorChoices.choices
+    )
+
     is_sterilized = models.BooleanField(default=False)
     is_vaccinated = models.BooleanField(default=False)
+    special_needs = models.BooleanField(default=False)
+    has_passport = models.BooleanField(default=False)
+
+    story = models.TextField(null=True, blank=True, max_length=1024)
+    about = models.TextField(null=True, blank=True, max_length=1024)
 
     # --- Listing Details ---
     created_at = models.DateTimeField(auto_now_add=True)
@@ -108,10 +110,11 @@ class PetListing(models.Model):
         on_delete=models.CASCADE,
         related_name="listings",
     )
+
     status = models.CharField(
-        max_length=20,
+        max_length=32,
         choices=StatusChoices.choices,
-        default=StatusChoices.ACTIVE
+        default=StatusChoices.HOME
     )
 
     class Meta:
