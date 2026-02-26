@@ -1,7 +1,7 @@
 import os
 
 from django.conf import settings
-from django.contrib.auth import get_user_model, logout
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from rest_framework import generics, status
@@ -9,8 +9,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from users.models import PasswordReset
-from users.serializers import UserCreateSerializer, UserManageSerializer, ShelterManageSerializer, \
-    ResetPasswordRequestSerializer, ResetPasswordSerializer
+from users.serializers import PersonalManageSerializer, ShelterManageSerializer, \
+    ResetPasswordRequestSerializer, ResetPasswordSerializer, ChangePasswordSerializer, PersonalRegistrationSerializer, \
+    ShelterRegistrationSerializer
 
 
 def pw_reset_email(email, url):
@@ -29,20 +30,25 @@ def pw_reset_email(email, url):
 
 
 class ManageUserView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserManageSerializer
+    serializer_class = PersonalManageSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         if self.request.user.role == get_user_model().RoleChoice.SHELTER:
             return ShelterManageSerializer
-        return UserManageSerializer
+        return PersonalManageSerializer
 
     def get_object(self):
         return self.request.user
 
 
 class CreateUserView(generics.CreateAPIView):
-    serializer_class = UserCreateSerializer
+    serializer_class = PersonalRegistrationSerializer
+    permission_classes = (AllowAny,)
+
+
+class CreateShelterView(generics.CreateAPIView):
+    serializer_class = ShelterRegistrationSerializer
     permission_classes = (AllowAny,)
 
 
@@ -77,26 +83,42 @@ class ResetPassword(generics.GenericAPIView):
     def post(self, request, token):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-
-        new_password = data['new_password']
-        confirm_password = data['confirm_password']
-
-        if new_password != confirm_password:
-            return Response({"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
 
         reset_obj = PasswordReset.objects.filter(token=token).first()
-
         if not reset_obj:
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
         user = get_user_model().objects.filter(email=reset_obj.email).first()
 
         if user:
-            user.set_password(request.data['new_password'])
+            user.set_password(serializer.validate["new_password"])
             user.save()
             reset_obj.delete()
 
             return Response({'success': 'Password updated'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'No user found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ChangePasswordView(generics.GenericAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        old_password  = serializer.validated_data.get("old_password")
+        new_password = serializer.validated_data.get("new_password")
+
+        user = request.user
+
+        if not user.check_password(old_password):
+            return Response(
+                {"old_password": ["Wrong password."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(new_password)
+        user.save()
+
+        return Response(status=status.HTTP_200_OK)
