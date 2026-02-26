@@ -122,3 +122,13 @@ class PetListing(models.Model):
 
     def __str__(self) -> str:
         return f"Listing for {self.name}"
+
+
+class PetListingImage(models.Model):
+    pet_listing = models.ForeignKey(
+        PetListing, on_delete=models.CASCADE,
+        related_name="additional_images"
+    )
+    image = models.ImageField(
+        upload_to=create_custom_path,
+    )
