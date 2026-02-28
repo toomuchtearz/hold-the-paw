@@ -14,6 +14,14 @@ def create_custom_path(instance, filename):
     )
 
 
+def create_custom_path_pet_listing_image(instance, filename):
+    _, extension = os.path.splitext(filename)
+    return os.path.join(
+        "uploads/images/",
+        f"{slugify(instance.pet_listing.name)}-{uuid.uuid4()}{extension}"
+    )
+
+
 class PetListing(models.Model):
     class AgeChoices(models.TextChoices):
         PUPPY = "puppy", "Puppy (0–12 months)"
@@ -130,5 +138,5 @@ class PetListingImage(models.Model):
         related_name="additional_images"
     )
     image = models.ImageField(
-        upload_to=create_custom_path,
+        upload_to=create_custom_path_pet_listing_image,
     )
