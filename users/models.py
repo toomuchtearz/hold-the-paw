@@ -86,6 +86,7 @@ class ShelterProfile(models.Model):
     company_name = models.CharField(max_length=255)
     address = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    tax_id = models.CharField(max_length=32)
 
 
 class PersonalProfile(models.Model):
