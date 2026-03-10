@@ -81,6 +81,7 @@ class AuthorSerializer(serializers.ModelSerializer):
             "role",
         )
 
+
 class PetListingRetrieveSerializer(serializers.ModelSerializer):
     additional_images = PetListingImageSerializer(
         many=True, read_only=True
