@@ -91,7 +91,7 @@ class ResetPassword(generics.GenericAPIView):
         user = get_user_model().objects.filter(email=reset_obj.email).first()
 
         if user:
-            user.set_password(serializer.validate["new_password"])
+            user.set_password(serializer.validated_data["new_password"])
             user.save()
             reset_obj.delete()
 
