@@ -84,6 +84,7 @@ class PersonalManageSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "phone_number",
+            "telegram_nickname",
         )
 
 class ShelterManageSerializer(serializers.ModelSerializer):
