@@ -109,4 +109,7 @@ class PetListingRetrieveSerializer(serializers.ModelSerializer):
             "main_image",
             "additional_images",
             "author",
+            "is_active",
+            "status",
+            "size",
         )
