@@ -86,6 +86,7 @@ class PersonalManageSerializer(serializers.ModelSerializer):
             "phone_number",
             "telegram_nickname",
             "viber_phone_number",
+            "role",
         )
 
 class ShelterManageSerializer(serializers.ModelSerializer):
@@ -106,6 +107,7 @@ class ShelterManageSerializer(serializers.ModelSerializer):
             "viber_phone_number",
             "telegram_nickname",
             "tax_id",
+            "role",
         )
 
     def update(self, instance, validated_data):
