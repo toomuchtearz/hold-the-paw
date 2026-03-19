@@ -90,6 +90,12 @@ class PetListing(models.Model):
         choices=BreedChoices.choices
     )
 
+    size = models.CharField(
+        max_length=32,
+        default=SizeChoices.MEDIUM,
+        choices=StatusChoices.choices,
+    )
+
     pet_type = models.CharField(
         max_length=32,
         default=TypeChoices.DOG,
