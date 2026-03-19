@@ -80,6 +80,7 @@ class AuthorSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
             "telegram_nickname",
+            "viber_phone_number",
             "role",
         )
 
