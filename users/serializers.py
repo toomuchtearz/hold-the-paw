@@ -85,12 +85,14 @@ class PersonalManageSerializer(serializers.ModelSerializer):
             "last_name",
             "phone_number",
             "telegram_nickname",
+            "viber_phone_number",
         )
 
 class ShelterManageSerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(source="shelter_profile.company_name")
     address = serializers.CharField(source="shelter_profile.address")
     description = serializers.CharField(source="shelter_profile.description")
+    tax_id = serializers.CharField(source="shelter_profile.tax_id")
 
     class Meta:
         model = get_user_model()
@@ -101,6 +103,9 @@ class ShelterManageSerializer(serializers.ModelSerializer):
             "address",
             "description",
             "phone_number",
+            "viber_phone_number",
+            "telegram_nickname",
+            "tax_id",
         )
 
     def update(self, instance, validated_data):

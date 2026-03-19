@@ -36,6 +36,7 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
     def get_serializer_class(self):
         if self.request.user.role == get_user_model().RoleChoice.SHELTER:
             return ShelterManageSerializer
+
         return PersonalManageSerializer
 
     def get_object(self):
