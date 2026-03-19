@@ -108,6 +108,7 @@ class PetListing(models.Model):
     special_needs = models.BooleanField(default=False)
     has_passport = models.BooleanField(default=False)
     is_helped = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     story = models.TextField(null=True, blank=True, max_length=1024)
     about = models.TextField(null=True, blank=True, max_length=1024)
