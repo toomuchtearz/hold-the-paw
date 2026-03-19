@@ -49,7 +49,7 @@ class PetListingViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
         if self.action == "list":
             queryset = queryset.filter(
-                is_helped=False
+                is_active=True
             )
         return queryset
 

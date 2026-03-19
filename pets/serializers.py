@@ -66,6 +66,7 @@ class PetListingListSerializer(serializers.ModelSerializer):
             "gender",
             "age",
             "main_image",
+            "location",
         )
 
 
