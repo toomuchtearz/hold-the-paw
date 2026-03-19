@@ -70,6 +70,7 @@ class User(AbstractUser):
         unique=True,
     )
     telegram_nickname = models.CharField(max_length=64, blank=True, null=True)
+    viber_phone_number = models.CharField(max_length=64, blank=True, null=True)
 
     role = models.CharField(
         choices=RoleChoice.choices,
