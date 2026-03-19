@@ -69,6 +69,19 @@ class PetListingViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
+    @action(
+        detail=True,
+        methods=["POST"]
+    )
+    def is_active_toggle(self, request, pk=None):
+        listing = self.get_object()
+        listing.is_active = not listing.is_active
+        listing.save()
+        return Response(
+            {"is_active": listing.is_active},
+            status=status.HTTP_200_OK
+        )
+
 
 class MyListingsViewSet(ListAPIView):
     queryset = PetListing.objects.all()
