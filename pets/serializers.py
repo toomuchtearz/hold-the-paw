@@ -58,6 +58,19 @@ class PetListingCreateSerializer(serializers.ModelSerializer):
 
         return pet_listing
 
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        additional_images = validated_data.pop("additional_images", [])
+
+        instance = super().update(instance, validated_data)
+
+        for image in additional_images:
+            PetListingImage.objects.create(
+                image=image,
+                pet_listing=instance
+            )
+
+        return instance
 
 class PetListingListSerializer(serializers.ModelSerializer):
     class Meta:

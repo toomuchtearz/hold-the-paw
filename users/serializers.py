@@ -90,6 +90,7 @@ class PersonalManageSerializer(serializers.ModelSerializer):
             "viber_phone_number",
             "role",
         )
+        read_only_fields = ("role", "email")
 
     def update(self, instance, validated_data):
         personal_profile_info = validated_data.pop("personal_profile", {})
@@ -126,6 +127,7 @@ class ShelterManageSerializer(serializers.ModelSerializer):
             "tax_id",
             "role",
         )
+        read_only_fields = ("role", "email",)
 
     def update(self, instance, validated_data):
         shelter_profile_info = validated_data.pop("shelter_profile", {})
