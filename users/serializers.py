@@ -6,6 +6,7 @@ from rest_framework import serializers
 from users.models import ShelterProfile, PersonalProfile
 
 class PersonalRegistrationSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(write_only=True)
 
     class Meta:
         model = get_user_model()
@@ -14,8 +15,7 @@ class PersonalRegistrationSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
             "password",
-            "first_name",
-            "last_name",
+            'full_name'
         )
         extra_kwargs = {
             "password": {
@@ -23,17 +23,19 @@ class PersonalRegistrationSerializer(serializers.ModelSerializer):
                 "style": {"input_type": "password"},
                 "validators": [validate_password],
             },
-            "first_name": {"required": True, "allow_blank": False},
-            "last_name": {"required": True, "allow_blank": False},
+            "full_name": {"required": True, "allow_blank": False},
         }
 
     @transaction.atomic
     def create(self, validated_data):
         validated_data["role"] = get_user_model().RoleChoice.PERSONAL
+
         new_user = get_user_model().objects.create_user(**validated_data)
+        full_name  = validated_data.pop("full_name")
 
         PersonalProfile.objects.create(
-            user=new_user
+            user=new_user,
+            full_name=full_name
         )
         return new_user
 
@@ -75,19 +77,34 @@ class ShelterRegistrationSerializer(serializers.ModelSerializer):
 
 
 class PersonalManageSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source="personal_profile.full_name")
 
     class Meta:
         model = get_user_model()
         fields = (
             "id",
             "email",
-            "first_name",
-            "last_name",
+            "full_name",
             "phone_number",
             "telegram_nickname",
             "viber_phone_number",
             "role",
         )
+
+    def update(self, instance, validated_data):
+        personal_profile_info = validated_data.pop("personal_profile")
+        personal_profile = instance.personal_profile
+        updated_user = super().update(instance, validated_data)
+
+        if personal_profile_info:
+
+            for key, value in personal_profile_info.items():
+                setattr(personal_profile, key, value)
+
+            personal_profile.save()
+
+        return updated_user
+
 
 class ShelterManageSerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(source="shelter_profile.company_name")

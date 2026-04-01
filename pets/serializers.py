@@ -68,6 +68,7 @@ class PetListingListSerializer(serializers.ModelSerializer):
             "main_image",
             "location",
             "is_active",
+            "status",
         )
 
 

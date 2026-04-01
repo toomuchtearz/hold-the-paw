@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -7,13 +7,14 @@ from rest_framework import filters
 from rest_framework.response import Response
 
 from pets.models import PetListing
+from pets.permissions import IsAuthorOrReadOnly
 from pets.serializers import PetListingListSerializer, PetListingRetrieveSerializer, PetListingCreateSerializer
 
 
 class PetListingViewSet(viewsets.ModelViewSet):
     queryset = PetListing.objects.all()
     serializer_class =  PetListingCreateSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -58,7 +59,8 @@ class PetListingViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=["POST"]
+        methods=["POST"],
+        serializer_class=serializers.Serializer
     )
     def is_helped_toggle(self, request, pk=None):
         listing = self.get_object()
@@ -71,7 +73,8 @@ class PetListingViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=["POST"]
+        methods=["POST"],
+        serializer_class=serializers.Serializer
     )
     def is_active_toggle(self, request, pk=None):
         listing = self.get_object()
@@ -83,14 +86,20 @@ class PetListingViewSet(viewsets.ModelViewSet):
         )
 
 
-class MyListingsViewSet(ListAPIView):
+class MyListingsListView(ListAPIView):
     queryset = PetListing.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = PetListingListSerializer
 
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    )
+
+    filterset_fields = ("is_active", "status")
+    ordering_fields = ("created_at",)
+    search_fields = ("name", "location")
+
     def get_queryset(self):
-        queryset = self.queryset
-        queryset = queryset.filter(
-            author=self.request.user
-        )
-        return queryset
+        return self.queryset.filter(author=self.request.user)

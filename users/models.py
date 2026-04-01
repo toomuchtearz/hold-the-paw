@@ -55,7 +55,7 @@ class User(AbstractUser):
         SHELTER = "shelter", "Shelter"
 
     username = None
-    email = models.EmailField(_('email address'), unique=True)
+    email = models.EmailField('email address', unique=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -92,6 +92,7 @@ class ShelterProfile(models.Model):
 
 class PersonalProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="personal_profile")
+    full_name = models.CharField(max_length=150)
 
 
 class PasswordReset(models.Model):
