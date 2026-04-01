@@ -2,7 +2,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import filters
 from rest_framework.response import Response
 

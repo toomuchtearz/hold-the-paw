@@ -89,9 +89,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class PetListingRetrieveSerializer(serializers.ModelSerializer):
-    additional_images = PetListingImageSerializer(
-        many=True, read_only=True
-    )
+    photos = serializers.SerializerMethodField()
     author = AuthorSerializer(read_only=True)
 
     class Meta:
@@ -111,10 +109,29 @@ class PetListingRetrieveSerializer(serializers.ModelSerializer):
             "has_passport",
             "story",
             "about",
-            "main_image",
-            "additional_images",
             "author",
             "is_active",
             "status",
             "size",
+            "photos",
         )
+
+    def get_photos(self, obj):
+        request = self.context.get('request')
+
+        # Start with an empty list
+        photo_list = []
+
+        # Step A: Add the main image if it exists
+        if obj.main_image:
+            photo_list.append(request.build_absolute_uri(obj.main_image.url))
+
+        # Step B: Loop through the gallery and add the rest
+        # NOTE: Replace 'images' below with whatever your related_name is on the ForeignKey!
+        # If you didn't set a related_name in models.py, it will be obj.petlistingimage_set.all()
+        for gallery_img in obj.additional_images.all():
+            if gallery_img.image:
+                photo_list.append(request.build_absolute_uri(gallery_img.image.url))
+
+        # Step C: Hand the final stitched list back to DRF
+        return photo_list
