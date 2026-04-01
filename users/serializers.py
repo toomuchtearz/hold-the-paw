@@ -92,7 +92,7 @@ class PersonalManageSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        personal_profile_info = validated_data.pop("personal_profile")
+        personal_profile_info = validated_data.pop("personal_profile", {})
         personal_profile = instance.personal_profile
         updated_user = super().update(instance, validated_data)
 
@@ -128,7 +128,7 @@ class ShelterManageSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        shelter_profile_info = validated_data.pop("shelter_profile")
+        shelter_profile_info = validated_data.pop("shelter_profile", {})
         shelter_profile = instance.shelter_profile
         updated_user = super().update(instance, validated_data)
 
