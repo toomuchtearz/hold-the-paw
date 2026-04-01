@@ -61,15 +61,18 @@ class PetListingCreateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        additional_images = validated_data.pop("additional_images", [])
+        additional_images = validated_data.pop("additional_images", None)
 
         instance = super().update(instance, validated_data)
 
-        for image in additional_images:
-            PetListingImage.objects.create(
-                image=image,
-                pet_listing=instance
-            )
+        if additional_images is not None:
+            instance.additional_images.all().delete()
+
+            for image in additional_images:
+                PetListingImage.objects.create(
+                    image=image,
+                    pet_listing=instance
+                )
 
         return instance
 
