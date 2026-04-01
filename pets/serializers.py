@@ -40,6 +40,8 @@ class PetListingCreateSerializer(serializers.ModelSerializer):
             "status",
             "main_image",
             "additional_images",
+            "is_helped",
+            "is_active",
         )
 
     @transaction.atomic
