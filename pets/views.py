@@ -1,10 +1,8 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status, serializers
-from rest_framework.decorators import action
+from rest_framework import viewsets
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import filters
-from rest_framework.response import Response
 
 from pets.models import PetListing
 from pets.permissions import IsAuthorOrReadOnly
@@ -56,34 +54,6 @@ class PetListingViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    @action(
-        detail=True,
-        methods=["POST"],
-        serializer_class=serializers.Serializer
-    )
-    def is_helped_toggle(self, request, pk=None):
-        listing = self.get_object()
-        listing.is_helped = not listing.is_helped
-        listing.save()
-        return Response(
-            {"is_helped": listing.is_helped},
-            status=status.HTTP_200_OK
-        )
-
-    @action(
-        detail=True,
-        methods=["POST"],
-        serializer_class=serializers.Serializer
-    )
-    def is_active_toggle(self, request, pk=None):
-        listing = self.get_object()
-        listing.is_active = not listing.is_active
-        listing.save()
-        return Response(
-            {"is_active": listing.is_active},
-            status=status.HTTP_200_OK
-        )
 
 
 class MyListingsListView(ListAPIView):

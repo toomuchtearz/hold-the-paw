@@ -15,7 +15,7 @@ class PersonalRegistrationSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
             "password",
-            'full_name'
+            'full_name',
         )
         extra_kwargs = {
             "password": {
@@ -29,9 +29,9 @@ class PersonalRegistrationSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         validated_data["role"] = get_user_model().RoleChoice.PERSONAL
-
+        full_name = validated_data.pop("full_name")
         new_user = get_user_model().objects.create_user(**validated_data)
-        full_name  = validated_data.pop("full_name")
+
 
         PersonalProfile.objects.create(
             user=new_user,
