@@ -1,7 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.generics import ListAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import filters
 
 from pets.models import PetListing
@@ -35,6 +35,13 @@ class PetListingViewSet(viewsets.ModelViewSet):
         "status",
 
     )
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [AllowAny()]
+
+        return super().get_permissions()
+
     def get_serializer_class(self):
         serializer = self.serializer_class
         if self.action == "retrieve":
